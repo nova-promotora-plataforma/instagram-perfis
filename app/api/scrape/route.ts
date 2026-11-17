@@ -24,13 +24,11 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        directUrls: [],
-        resultsType: 'users',
-        resultsLimit: resultsPerSearch,
-        searchType: 'hashtag',
+        resultsType: 'details',
+        search: searches,
+        searchType: 'user',
         searchLimit: resultsPerSearch,
-        query: searches.join('\n'),
-        proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+        proxy: { useApifyProxy: true },
       }),
     }
   )
