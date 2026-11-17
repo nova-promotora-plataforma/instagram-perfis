@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         resultsType: 'details',
-        search: searches,
+        search: searches[0],
         searchType: 'user',
         searchLimit: resultsPerSearch,
         proxy: { useApifyProxy: true },
