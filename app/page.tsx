@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 
 const STATUS_LABELS: Record<string, string> = {
   sem_status:      'Sem status',
@@ -33,6 +34,7 @@ interface Profile {
 }
 
 export default function Home() {
+  const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [total, setTotal]       = useState(0)
   const [page, setPage]         = useState(1)
@@ -57,7 +59,10 @@ export default function Home() {
     setLoading(false)
   }, [page, q, status])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    if (!document.cookie.includes('ig_session')) { router.replace('/login'); return }
+    load()
+  }, [load, router])
 
   async function runScrape() {
     setScraping(true)
