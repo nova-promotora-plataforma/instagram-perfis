@@ -301,17 +301,17 @@ export default function Home() {
                 <div key={f.key}>
                   <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</label>
                   {f.type === 'select' ? (
-                    <select value={(editing as Record<string, unknown>)[f.key] as string ?? ''}
+                    <select value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
                       className="modal-input modal-select">
                       {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                     </select>
                   ) : f.type === 'textarea' ? (
-                    <textarea value={(editing as Record<string, unknown>)[f.key] as string ?? ''}
+                    <textarea value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
                       rows={3} className="modal-input" style={{ resize: 'vertical' }} />
                   ) : (
-                    <input value={(editing as Record<string, unknown>)[f.key] as string ?? ''}
+                    <input value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
                       className="modal-input" />
                   )}
