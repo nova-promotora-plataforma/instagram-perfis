@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model IgProfile {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  fullName    String?
+  bio         String?
+  followers   Int?
+  following   Int?
+  postsCount  Int?
+  isVerified  Boolean   @default(false)
+  profileUrl  String?
+  avatarUrl   String?
+  uf          String?
+  cidade      String?
+  nicho       String?   // cred, promotora, corban, consignado
+  status      String    @default("sem_status") // sem_status | lead_comercial | abordado | em_contato | virou_parceiro | descartado
+  responsavel String?
+  notas       String?
+  scrapedAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("ig_profiles")
+}
