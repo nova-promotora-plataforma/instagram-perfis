@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+export const maxDuration = 60
+
 const APIFY_TOKEN    = process.env.APIFY_TOKEN!
 const APIFY_ACTOR_ID = process.env.APIFY_ACTOR_ID ?? 'apify/instagram-scraper'
 
@@ -17,9 +19,8 @@ export async function POST(req: NextRequest) {
   const searches: string[] = body.searches ?? DEFAULT_SEARCHES
   const resultsPerSearch   = Math.min(body.resultsPerSearch ?? 20, 50)
 
-  // Chama Apify run-sync (espera resultado)
   const runRes = await fetch(
-    `https://api.apify.com/v2/acts/${encodeURIComponent(APIFY_ACTOR_ID)}/run-sync-get-dataset-items?token=${APIFY_TOKEN}&timeout=120`,
+    `https://api.apify.com/v2/acts/${encodeURIComponent(APIFY_ACTOR_ID)}/run-sync-get-dataset-items?token=${APIFY_TOKEN}&timeout=55`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,7 +47,6 @@ export async function POST(req: NextRequest) {
   for (const item of items) {
     const username = item.username ?? item.inputUrl?.split('/').filter(Boolean).pop()
     if (!username) continue
-
     try {
       await prisma.igProfile.upsert({
         where: { username },
