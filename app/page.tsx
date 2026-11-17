@@ -67,8 +67,7 @@ export default function Home() {
     if (data.error) {
       setScrapeMsg(`Erro: ${data.error}`)
     } else {
-      setScrapeMsg(`Concluído: ${data.inserted} novos, ${data.skipped} ignorados`)
-      load()
+      setScrapeMsg(data.message ?? `${data.started ?? 0} buscas iniciadas. Os perfis aparecem em ~3 min — atualize a página.`)
     }
     setScraping(false)
   }
