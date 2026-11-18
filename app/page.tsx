@@ -177,6 +177,15 @@ export default function Home() {
     }
   }
 
+  async function deleteProfile() {
+    if (!editing) return
+    if (!confirm(`Excluir @${editing.username}? Esta ação não pode ser desfeita.`)) return
+    await fetch('/api/perfis', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editing.id }) })
+    setEditing(null)
+    setUploadPreview(null)
+    load()
+  }
+
   async function saveEdit() {
     if (!editing) return
     await fetch('/api/perfis', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editing) })
@@ -569,6 +578,7 @@ export default function Home() {
 
             <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
               <button onClick={() => { setEditing(null); setUploadPreview(null) }} className="btn-ghost" style={{ flex: 1 }}>Cancelar</button>
+              <button onClick={deleteProfile} style={{ flex: 1, background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', fontFamily: 'Montserrat, sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '12px', cursor: 'pointer', borderRadius: 2 }}>Excluir</button>
               <button onClick={saveEdit} className="btn-primary" style={{ flex: 1 }}>Salvar</button>
             </div>
           </div>
