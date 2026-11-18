@@ -25,8 +25,9 @@ model IgProfile {
   nicho       String?   // cred, promotora, corban, consignado
   status      String    @default("sem_status") // sem_status | lead_comercial | abordado | em_contato | virou_parceiro | descartado
   responsavel String?
-  notas       String?
-  comprovante String?
+  notas            String?
+  comprovante      String?
+  codigoParceiro   String?
   scrapedAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

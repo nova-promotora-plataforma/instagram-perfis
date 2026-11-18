@@ -35,6 +35,7 @@ interface Profile {
   profileUrl: string | null
   avatarUrl: string | null
   comprovante: string | null
+  codigoParceiro: string | null
 }
 
 export default function Home() {
@@ -494,6 +495,21 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            {/* Código do parceiro — aparece só quando virou_parceiro ou ja_parceiro */}
+            {(editing.status === 'virou_parceiro' || editing.status === 'ja_parceiro') && (
+              <div>
+                <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: '#10b981', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  Código do parceiro
+                </label>
+                <input
+                  value={(editing as unknown as Record<string, string>).codigoParceiro ?? ''}
+                  onChange={e => setEditing(prev => prev ? { ...prev, codigoParceiro: e.target.value } : null)}
+                  placeholder="Ex: NP-2024-001"
+                  className="modal-input"
+                />
+              </div>
+            )}
+
             {/* Comprovante — aparece sempre, destaque quando abordado */}
             <div>
               <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: editing.status === 'abordado' ? '#f59e0b' : t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
