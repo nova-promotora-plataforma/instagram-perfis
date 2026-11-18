@@ -81,5 +81,11 @@ export async function POST(req: NextRequest) {
     } catch { /* skip duplicates */ }
   }
 
+  // dispara enriquecimento em background se salvou perfis novos
+  if (inserted > 0) {
+    const baseUrl = 'https://instagram-perfis.vercel.app'
+    fetch(`${baseUrl}/api/enrich`, { method: 'POST' }).catch(() => {})
+  }
+
   return NextResponse.json({ ok: true, inserted })
 }

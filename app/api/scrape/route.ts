@@ -11,6 +11,13 @@ const DEFAULT_SEARCHES = [
   'promotora credito',
   'promotora financeira',
   'corban inss',
+  'corban fgts',
+  'promotora consignado',
+  'correspondente credito',
+  'corban credito',
+  'promotora bancaria',
+  'consignado inss',
+  'financeira credito',
 ]
 
 export async function POST(req: NextRequest) {
