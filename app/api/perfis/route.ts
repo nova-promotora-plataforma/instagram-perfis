@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const body = await req.json()
-  const { id, status, responsavel, notas, uf, cidade, nicho, comprovante, codigoParceiro } = body
+  const { id, status, responsavel, notas, uf, cidade, nicho, comprovante, codigoParceiro, telefone, followers } = body
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
   const updated = await prisma.igProfile.update({
@@ -62,6 +62,8 @@ export async function PATCH(req: NextRequest) {
       ...(nicho       !== undefined && { nicho }),
       ...(comprovante     !== undefined && { comprovante }),
       ...(codigoParceiro  !== undefined && { codigoParceiro }),
+      ...(telefone        !== undefined && { telefone }),
+      ...(followers       !== undefined && { followers: followers === null ? null : Number(followers) }),
     },
   })
   return NextResponse.json(updated)

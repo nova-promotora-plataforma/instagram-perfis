@@ -478,6 +478,8 @@ export default function Home() {
                 { label: 'Produto principal', key: 'nicho',       type: 'text', placeholder: 'Ex: CLT, FGTS, INSS' },
                 { label: 'Cidade',            key: 'cidade',      type: 'text'     },
                 { label: 'UF',               key: 'uf',          type: 'text'     },
+                { label: 'Telefone',          key: 'telefone',    type: 'text', placeholder: 'Ex: +5511999999999' },
+                { label: 'Seguidores',        key: 'followers',   type: 'number', placeholder: 'Ex: 5000' },
                 { label: 'Notas',             key: 'notas',       type: 'textarea' },
               ].map(f => (
                 <div key={f.key}>
@@ -506,8 +508,10 @@ export default function Home() {
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
                       rows={3} className="modal-input" style={{ resize: 'vertical' }} />
                   ) : (
-                    <input value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
-                      onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
+                    <input
+                      type={(f as { type: string }).type === 'number' ? 'number' : 'text'}
+                      value={(editing as unknown as Record<string, unknown>)[f.key] ?? ''}
+                      onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: (f as { type: string }).type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value } : null)}
                       placeholder={(f as { placeholder?: string }).placeholder ?? ''}
                       className="modal-input" />
                   )}
