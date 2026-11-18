@@ -46,6 +46,7 @@ export default function Home() {
   const [scrapeMsg, setScrapeMsg] = useState('')
   const [editing, setEditing]   = useState<Profile | null>(null)
   const [polling, setPolling]   = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -196,6 +197,78 @@ export default function Home() {
             <button onClick={runScrape} disabled={scraping} className="btn-primary">
               {scraping ? 'Buscando...' : '+ Buscar novos perfis'}
             </button>
+          </div>
+
+          {/* Painel de ajuda */}
+          <div style={{ marginBottom: 24, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)' }}>
+            <button
+              onClick={() => setShowHelp(v => !v)}
+              style={{ width: '100%', background: 'transparent', border: 'none', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.4)', fontFamily: 'Montserrat, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 12 }}>?</span> Como usar este sistema
+              </span>
+              <span style={{ fontSize: 14, transition: 'transform 0.2s', transform: showHelp ? 'rotate(180deg)' : 'none' }}>▾</span>
+            </button>
+            {showHelp && (
+              <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 16 }}>
+                {[
+                  {
+                    icon: '🔍',
+                    titulo: 'Buscar novos perfis',
+                    passos: [
+                      'Clique em "+ Buscar novos perfis"',
+                      'Aguarde ~5 minutos (a página atualiza sozinha)',
+                      'Novos corbans e promotoras aparecem automaticamente',
+                      'O sistema também busca todo dia às 7h sem precisar de ninguém',
+                    ],
+                  },
+                  {
+                    icon: '✏️',
+                    titulo: 'Atualizar um perfil',
+                    passos: [
+                      'Clique em "Editar" na linha do perfil',
+                      'Altere status, responsável, nicho, UF ou notas',
+                      'Clique em "Salvar"',
+                      'Use o campo Notas para registrar histórico de contato',
+                    ],
+                  },
+                  {
+                    icon: '🎯',
+                    titulo: 'Status dos perfis',
+                    passos: [
+                      'Sem status → ainda não analisado',
+                      'Lead do comercial → validado, pronto para abordar',
+                      'Abordado → já foi contatado',
+                      'Em contato → negociação em andamento',
+                      'Virou parceiro → fechou parceria',
+                      'Descartado → não tem fit',
+                    ],
+                  },
+                  {
+                    icon: '🔎',
+                    titulo: 'Filtrar e pesquisar',
+                    passos: [
+                      'Use a barra de busca para filtrar por @username ou nome',
+                      'Use o seletor de status para ver apenas um grupo',
+                      'Clique no @username para abrir o perfil no Instagram',
+                      'Os perfis são ordenados pelos mais recentes',
+                    ],
+                  },
+                ].map(item => (
+                  <div key={item.titulo}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span style={{ fontSize: 16 }}>{item.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>{item.titulo}</span>
+                    </div>
+                    <ol style={{ margin: 0, paddingLeft: 16 }}>
+                      {item.passos.map((p, i) => (
+                        <li key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 5, lineHeight: 1.5 }}>{p}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Scrape message */}
