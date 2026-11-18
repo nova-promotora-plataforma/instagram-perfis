@@ -6,9 +6,9 @@ const APIFY_TOKEN    = process.env.APIFY_TOKEN!
 const APIFY_ACTOR_ID = process.env.APIFY_ACTOR_ID ?? 'apify/instagram-scraper'
 
 const DEFAULT_SEARCHES = [
-  'promotora credito',
-  'correspondente bancario',
-  'corban consignado',
+  'promotora credito brasil',
+  'correspondente bancario brasil',
+  'corban consignado brasil',
 ]
 
 export async function POST(req: NextRequest) {

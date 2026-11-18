@@ -4,15 +4,20 @@ import { prisma } from '@/lib/db'
 export const maxDuration = 60
 
 interface ApifyUser {
-  username?:       string
-  fullName?:       string
-  biography?:      string
-  followersCount?: number
-  followingCount?: number
-  postsCount?:     number
-  verified?:       boolean
-  profilePicUrl?:  string
-  inputUrl?:       string
+  username?:            string
+  fullName?:            string
+  biography?:           string
+  followersCount?:      number
+  followingCount?:      number
+  postsCount?:          number
+  verified?:            boolean
+  profilePicUrl?:       string
+  inputUrl?:            string
+  city?:                string
+  country?:             string
+  countryCode?:         string
+  businessCategoryName?: string
+  isBusinessAccount?:   boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -35,6 +40,9 @@ export async function POST(req: NextRequest) {
     const username = item.username ?? item.inputUrl?.split('/').filter(Boolean).pop()
     if (!username) continue
     try {
+      // só salva se for do Brasil (ou sem país definido)
+      if (item.countryCode && item.countryCode !== 'BR') continue
+
       await prisma.igProfile.upsert({
         where: { username },
         create: {
@@ -47,6 +55,7 @@ export async function POST(req: NextRequest) {
           isVerified: item.verified ?? false,
           profileUrl: `https://instagram.com/${username}`,
           avatarUrl:  item.profilePicUrl ?? null,
+          cidade:     item.city ?? null,
         },
         update: {
           fullName:   item.fullName ?? undefined,
@@ -56,6 +65,7 @@ export async function POST(req: NextRequest) {
           postsCount: item.postsCount ?? undefined,
           isVerified: item.verified ?? undefined,
           avatarUrl:  item.profilePicUrl ?? undefined,
+          cidade:     item.city ?? undefined,
         },
       })
       inserted++
