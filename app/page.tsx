@@ -52,6 +52,8 @@ export default function Home() {
   const [sortKey, setSortKey]     = useState<string>('')
   const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('asc')
   const [dark, setDark]           = useState(true)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [modalOpen, setModalOpen]   = useState(false)
 
   // persiste preferência de tema
   useEffect(() => {
@@ -324,11 +326,26 @@ export default function Home() {
               <input value={q} onChange={e => { setQ(e.target.value); setPage(1) }} placeholder="Buscar username ou nome..." className="search-input" />
             </div>
             <div style={{ position: 'relative' }}>
-              <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} className="filter-select">
-                <option value="">Todos os status</option>
-                {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-              <span style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', color: t.textFaint, fontSize: 10, pointerEvents: 'none' }}>▾</span>
+              <button onClick={() => setFilterOpen(v => !v)}
+                style={{ background: 'transparent', border: 'none', borderBottom: `1px solid ${t.border}`, padding: '8px 24px 8px 0', color: t.textMuted, fontFamily: 'Montserrat, sans-serif', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, minWidth: 180, outline: 'none' }}>
+                {status ? (
+                  <><span style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_COLORS[status], flexShrink: 0 }} />{STATUS_LABELS[status]}</>
+                ) : 'Todos os status'}
+                <span style={{ marginLeft: 'auto', color: t.textFaint, fontSize: 10 }}>▾</span>
+              </button>
+              {filterOpen && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 20, background: t.bgSub, border: `1px solid ${t.border}`, minWidth: 200, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', marginTop: 4 }}>
+                  {[{ key: '', label: 'Todos os status', color: '' }, ...Object.entries(STATUS_LABELS).map(([k, v]) => ({ key: k, label: v, color: STATUS_COLORS[k] }))].map(opt => (
+                    <button key={opt.key} onClick={() => { setStatus(opt.key); setPage(1); setFilterOpen(false) }}
+                      style={{ width: '100%', background: status === opt.key ? t.bgCard : 'transparent', border: 'none', padding: '10px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'Montserrat, sans-serif', fontSize: 12, color: t.text, textAlign: 'left' }}>
+                      {opt.color
+                        ? <span style={{ width: 8, height: 8, borderRadius: '50%', background: opt.color, flexShrink: 0 }} />
+                        : <span style={{ width: 8, height: 8, borderRadius: '50%', border: `1px solid ${t.border}`, flexShrink: 0 }} />}
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -427,11 +444,24 @@ export default function Home() {
                 <div key={f.key}>
                   <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</label>
                   {f.type === 'select' ? (
-                    <select value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
-                      onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
-                      className="modal-input modal-select">
-                      {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={() => setModalOpen(v => !v)}
+                        style={{ width: '100%', background: t.inputBg, border: `1px solid ${modalOpen ? '#b21f17' : t.inputBorder}`, borderRadius: 2, padding: '10px 12px', color: t.text, fontFamily: 'Montserrat, sans-serif', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, outline: 'none', textAlign: 'left' }}>
+                        {(() => { const k = (editing as unknown as Record<string,string>)[f.key] ?? ''; return (<><span style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_COLORS[k] ?? '#52525b', flexShrink: 0 }} />{STATUS_LABELS[k] ?? k}</>); })()}
+                        <span style={{ marginLeft: 'auto', color: t.textFaint, fontSize: 10 }}>▾</span>
+                      </button>
+                      {modalOpen && (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, background: t.bgSub, border: `1px solid ${t.border}`, boxShadow: '0 8px 24px rgba(0,0,0,0.25)', marginTop: 2 }}>
+                          {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                            <button key={k} onClick={() => { setEditing(prev => prev ? { ...prev, [f.key]: k } : null); setModalOpen(false) }}
+                              style={{ width: '100%', background: (editing as unknown as Record<string,string>)[f.key] === k ? t.bgCard : 'transparent', border: 'none', padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'Montserrat, sans-serif', fontSize: 13, color: t.text, textAlign: 'left' }}>
+                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_COLORS[k] ?? '#52525b', flexShrink: 0 }} />
+                              {v}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ) : f.type === 'textarea' ? (
                     <textarea value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
