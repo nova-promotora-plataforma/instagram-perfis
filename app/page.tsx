@@ -28,6 +28,8 @@ interface Profile {
   responsavel: string | null
   nicho: string | null
   uf: string | null
+  cidade: string | null
+  telefone: string | null
   profileUrl: string | null
   avatarUrl: string | null
 }
@@ -227,7 +229,7 @@ export default function Home() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  {['Perfil', 'Seguidores', 'Nicho', 'Status', 'Responsável', ''].map((h, i) => (
+                  {['Perfil', 'Seguidores', 'Cidade', 'Telefone', 'Nicho', 'Status', 'Responsável', ''].map((h, i) => (
                     <th key={i} style={{
                       padding: '12px 16px', textAlign: 'left',
                       fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
@@ -238,9 +240,9 @@ export default function Home() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: '0.1em' }}>CARREGANDO...</td></tr>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: '0.1em' }}>CARREGANDO...</td></tr>
                 ) : profiles.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>
                     Nenhum perfil. Clique em &ldquo;+ Buscar novos perfis&rdquo; para começar.
                   </td></tr>
                 ) : profiles.map(p => (
@@ -261,6 +263,8 @@ export default function Home() {
                       </div>
                     </td>
                     <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 600 }}>{fmt(p.followers)}</td>
+                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.cidade ?? '—'}</td>
+                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.telefone ?? '—'}</td>
                     <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.nicho ?? '—'}</td>
                     <td style={{ padding: '14px 16px' }}>
                       <span style={{

@@ -18,6 +18,8 @@ interface ApifyUser {
   countryCode?:         string
   businessCategoryName?: string
   isBusinessAccount?:   boolean
+  publicPhoneNumber?:   string
+  publicPhoneCountryCode?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest) {
           profileUrl: `https://instagram.com/${username}`,
           avatarUrl:  item.profilePicUrl ?? null,
           cidade:     item.city ?? null,
+          telefone:   item.publicPhoneNumber ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}` : null,
         },
         update: {
           fullName:   item.fullName ?? undefined,
@@ -66,6 +69,7 @@ export async function POST(req: NextRequest) {
           isVerified: item.verified ?? undefined,
           avatarUrl:  item.profilePicUrl ?? undefined,
           cidade:     item.city ?? undefined,
+          telefone:   item.publicPhoneNumber ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}` : undefined,
         },
       })
       inserted++

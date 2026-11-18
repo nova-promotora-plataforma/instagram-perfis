@@ -19,6 +19,7 @@ model IgProfile {
   isVerified  Boolean   @default(false)
   profileUrl  String?
   avatarUrl   String?
+  telefone    String?
   uf          String?
   cidade      String?
   nicho       String?   // cred, promotora, corban, consignado
