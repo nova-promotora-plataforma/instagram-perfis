@@ -510,7 +510,7 @@ export default function Home() {
                   ) : (
                     <input
                       type={(f as { type: string }).type === 'number' ? 'number' : 'text'}
-                      value={(editing as unknown as Record<string, unknown>)[f.key] ?? ''}
+                      value={String((editing as unknown as Record<string, unknown>)[f.key] ?? '')}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: (f as { type: string }).type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value } : null)}
                       placeholder={(f as { placeholder?: string }).placeholder ?? ''}
                       className="modal-input" />
