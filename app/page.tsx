@@ -236,8 +236,29 @@ export default function Home() {
             <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Perfis Instagram</span>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>{t.themeIcon}</span> {t.themeLabel}
+            <button onClick={toggleTheme} title={`Mudar para tema ${t.themeLabel}`}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
+                {dark ? '☀️' : '🌙'}
+              </span>
+              {/* track */}
+              <span style={{
+                display: 'inline-flex', alignItems: 'center',
+                width: 40, height: 22, borderRadius: 11,
+                background: dark ? 'rgba(255,255,255,0.12)' : '#b21f17',
+                border: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : '#991a14'}`,
+                padding: '2px',
+                transition: 'background 0.25s, border-color 0.25s',
+                position: 'relative',
+              }}>
+                <span style={{
+                  display: 'block', width: 16, height: 16, borderRadius: '50%',
+                  background: '#fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                  transform: dark ? 'translateX(0)' : 'translateX(18px)',
+                  transition: 'transform 0.25s',
+                }} />
+              </span>
             </button>
             <button onClick={logout} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 10 }}>Sair</button>
           </div>
