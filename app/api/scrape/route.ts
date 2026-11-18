@@ -20,9 +20,17 @@ const DEFAULT_SEARCHES = [
   'financeira credito',
 ]
 
+export async function GET() {
+  return runScrape(DEFAULT_SEARCHES)
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const searches: string[] = body.searches ?? DEFAULT_SEARCHES
+  return runScrape(searches)
+}
+
+async function runScrape(searches: string[]) {
 
   const webhookUrl = 'https://instagram-perfis.vercel.app/api/scrape/webhook'
 

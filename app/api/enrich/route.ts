@@ -6,7 +6,15 @@ export const maxDuration = 60
 const APIFY_TOKEN    = process.env.APIFY_TOKEN!
 const APIFY_ACTOR_ID = process.env.APIFY_ACTOR_ID ?? 'apify/instagram-scraper'
 
-export async function POST(req: NextRequest) {
+export async function GET() {
+  return runEnrich()
+}
+
+export async function POST(_req: NextRequest) {
+  return runEnrich()
+}
+
+async function runEnrich() {
   // busca perfis sem followers ainda
   const profiles = await prisma.igProfile.findMany({
     where: { followers: null },
