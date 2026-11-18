@@ -35,20 +35,74 @@ interface Profile {
 }
 
 export default function Home() {
-  const [profiles, setProfiles] = useState<Profile[]>([])
-  const [total, setTotal]       = useState(0)
-  const [page, setPage]         = useState(1)
-  const [pages, setPages]       = useState(1)
-  const [q, setQ]               = useState('')
-  const [status, setStatus]     = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [scraping, setScraping] = useState(false)
+  const [profiles, setProfiles]   = useState<Profile[]>([])
+  const [total, setTotal]         = useState(0)
+  const [page, setPage]           = useState(1)
+  const [pages, setPages]         = useState(1)
+  const [q, setQ]                 = useState('')
+  const [status, setStatus]       = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [scraping, setScraping]   = useState(false)
   const [scrapeMsg, setScrapeMsg] = useState('')
-  const [editing, setEditing]   = useState<Profile | null>(null)
-  const [polling, setPolling]   = useState(false)
-  const [showHelp, setShowHelp] = useState(false)
-  const [sortKey, setSortKey]   = useState<string>('')
-  const [sortDir, setSortDir]   = useState<'asc' | 'desc'>('asc')
+  const [editing, setEditing]     = useState<Profile | null>(null)
+  const [polling, setPolling]     = useState(false)
+  const [showHelp, setShowHelp]   = useState(false)
+  const [sortKey, setSortKey]     = useState<string>('')
+  const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('asc')
+  const [dark, setDark]           = useState(true)
+
+  // persiste preferência de tema
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('theme')
+      if (saved) setDark(saved === 'dark')
+    } catch {}
+  }, [])
+  function toggleTheme() {
+    setDark(d => {
+      try { localStorage.setItem('theme', !d ? 'dark' : 'light') } catch {}
+      return !d
+    })
+  }
+
+  // tokens de cor baseados no tema
+  const t = dark ? {
+    bg:          '#020203',
+    bgSub:       '#0a0a0b',
+    bgCard:      'rgba(255,255,255,0.015)',
+    border:      'rgba(255,255,255,0.06)',
+    borderSub:   'rgba(255,255,255,0.05)',
+    text:        '#e5e7eb',
+    textStrong:  '#ffffff',
+    textMuted:   'rgba(255,255,255,0.4)',
+    textFaint:   'rgba(255,255,255,0.2)',
+    inputBg:     'rgba(255,255,255,0.04)',
+    inputBorder: 'rgba(255,255,255,0.08)',
+    rowHover:    'rgba(255,255,255,0.03)',
+    optionBg:    '#0f0f10',
+    optionColor: '#ffffff',
+    modalOverlay:'rgba(0,0,0,0.85)',
+    themeIcon:   '☀️',
+    themeLabel:  'Claro',
+  } : {
+    bg:          '#f5f5f7',
+    bgSub:       '#ffffff',
+    bgCard:      'rgba(0,0,0,0.02)',
+    border:      'rgba(0,0,0,0.08)',
+    borderSub:   'rgba(0,0,0,0.05)',
+    text:        '#1a1a1a',
+    textStrong:  '#000000',
+    textMuted:   'rgba(0,0,0,0.5)',
+    textFaint:   'rgba(0,0,0,0.3)',
+    inputBg:     'rgba(0,0,0,0.04)',
+    inputBorder: 'rgba(0,0,0,0.12)',
+    rowHover:    'rgba(0,0,0,0.02)',
+    optionBg:    '#ffffff',
+    optionColor: '#000000',
+    modalOverlay:'rgba(0,0,0,0.6)',
+    themeIcon:   '🌙',
+    themeLabel:  'Escuro',
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -71,35 +125,21 @@ export default function Home() {
     setScrapeMsg('Iniciando buscas...')
     const res = await fetch('/api/scrape', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
     const data = await res.json()
-    if (data.error) {
-      setScrapeMsg(`Erro: ${data.error}`)
-      setScraping(false)
-      return
-    }
+    if (data.error) { setScrapeMsg(`Erro: ${data.error}`); setScraping(false); return }
     setScrapeMsg('Buscando perfis... atualizando automaticamente.')
     setScraping(false)
     setPolling(true)
-    // poll a cada 15s até parar de crescer
-    let prev = total
-    let stable = 0
+    let prev = total; let stable = 0
     const interval = setInterval(async () => {
       const current = await load()
       if (current === prev) { stable++ } else { stable = 0; prev = current }
-      if (stable >= 3) {
-        clearInterval(interval)
-        setPolling(false)
-        setScrapeMsg(`Busca concluída — ${current} perfis no total.`)
-      }
+      if (stable >= 3) { clearInterval(interval); setPolling(false); setScrapeMsg(`Busca concluída — ${current} perfis no total.`) }
     }, 15000)
   }
 
   async function saveEdit() {
     if (!editing) return
-    await fetch('/api/perfis', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editing),
-    })
+    await fetch('/api/perfis', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editing) })
     setEditing(null)
     load()
   }
@@ -119,8 +159,7 @@ export default function Home() {
     const av = (a as unknown as Record<string, unknown>)[sortKey]
     const bv = (b as unknown as Record<string, unknown>)[sortKey]
     if (av == null && bv == null) return 0
-    if (av == null) return 1
-    if (bv == null) return -1
+    if (av == null) return 1; if (bv == null) return -1
     const cmp = typeof av === 'number' && typeof bv === 'number'
       ? av - bv
       : String(av).localeCompare(String(bv), 'pt-BR', { sensitivity: 'base' })
@@ -128,17 +167,17 @@ export default function Home() {
   })
 
   const fmt = (n: number | null) =>
-    n == null ? '—' : n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(0)}k` : String(n)
+    n == null ? '—' : n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n/1_000).toFixed(0)}k` : String(n)
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
-        body { background: #020203; margin: 0; }
+        body { background: ${t.bg}; margin: 0; transition: background 0.2s; }
         input, select, textarea { font-family: Montserrat, sans-serif; }
         .table-row { transition: background 0.15s; }
-        .table-row:hover { background: rgba(255,255,255,0.03) !important; }
+        .table-row:hover { background: ${t.rowHover} !important; }
         .btn-primary {
           background: #b21f17; color: #fff; border: none; border-radius: 0;
           padding: 10px 22px; cursor: pointer; font-family: Montserrat, sans-serif;
@@ -148,58 +187,60 @@ export default function Home() {
         .btn-primary:hover:not(:disabled) { background: #991a14; }
         .btn-primary:disabled { opacity: 0.5; cursor: default; }
         .btn-ghost {
-          background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1);
+          background: transparent; color: ${t.textMuted}; border: 1px solid ${t.border};
           border-radius: 0; padding: 10px 18px; cursor: pointer; font-family: Montserrat, sans-serif;
           font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
           transition: all 0.2s;
         }
-        .btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+        .btn-ghost:hover { color: ${t.textStrong}; border-color: ${t.inputBorder}; }
         .search-input {
-          background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding: 8px 0; color: #fff; font-family: Montserrat, sans-serif; font-size: 13px;
+          background: transparent; border: none; border-bottom: 1px solid ${t.border};
+          padding: 8px 0; color: ${t.text}; font-family: Montserrat, sans-serif; font-size: 13px;
           outline: none; width: 100%; transition: border-color 0.2s;
         }
-        .search-input::placeholder { color: rgba(255,255,255,0.2); }
+        .search-input::placeholder { color: ${t.textFaint}; }
         .search-input:focus { border-bottom-color: #b21f17; }
         .filter-select {
-          background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding: 8px 24px 8px 0; color: rgba(255,255,255,0.6); font-family: Montserrat, sans-serif;
+          background: transparent; border: none; border-bottom: 1px solid ${t.border};
+          padding: 8px 24px 8px 0; color: ${t.textMuted}; font-family: Montserrat, sans-serif;
           font-size: 12px; outline: none; cursor: pointer; appearance: none;
           -webkit-appearance: none; min-width: 160px;
         }
-        .filter-select option { background: #0f0f10; color: #fff; }
+        .filter-select option { background: ${t.optionBg}; color: ${t.optionColor}; }
         .modal-input {
-          width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 2px; padding: 10px 12px; color: #fff; font-family: Montserrat, sans-serif;
+          width: 100%; background: ${t.inputBg}; border: 1px solid ${t.inputBorder};
+          border-radius: 2px; padding: 10px 12px; color: ${t.text}; font-family: Montserrat, sans-serif;
           font-size: 13px; outline: none; transition: border-color 0.2s;
         }
         .modal-input:focus { border-color: #b21f17; }
         .modal-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-        .modal-select option { background: #0f0f10; color: #fff; }
+        .modal-select option { background: ${t.optionBg}; color: ${t.optionColor}; }
+        .edit-btn {
+          background: transparent; border: 1px solid ${t.inputBorder}; border-radius: 1px;
+          padding: 5px 12px; color: ${t.textMuted}; cursor: pointer;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s;
+        }
+        .edit-btn:hover { color: ${t.textStrong}; border-color: ${t.border}; }
       `}</style>
 
-      <div style={{ fontFamily: 'Montserrat, sans-serif', background: '#020203', minHeight: '100vh', color: '#e5e7eb' }}>
+      <div style={{ fontFamily: 'Montserrat, sans-serif', background: t.bg, minHeight: '100vh', color: t.text, transition: 'background 0.2s, color 0.2s' }}>
 
         {/* Topbar */}
-        <div style={{
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          padding: '0 32px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          height: 56,
-        }}>
+        <div style={{ borderBottom: `1px solid ${t.border}`, padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>NOVA</span>
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.25em', textTransform: 'uppercase' }}>PROMOTORA</span>
+              <span style={{ fontSize: 16, fontWeight: 900, color: t.textStrong, letterSpacing: '-0.01em' }}>NOVA</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: t.textMuted, letterSpacing: '0.25em', textTransform: 'uppercase' }}>PROMOTORA</span>
             </div>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-              Perfis Instagram
-            </span>
+            <div style={{ width: 1, height: 16, background: t.border }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase' }}>Perfis Instagram</span>
           </div>
-          <button onClick={logout} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 10 }}>
-            Sair
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={toggleTheme} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>{t.themeIcon}</span> {t.themeLabel}
+            </button>
+            <button onClick={logout} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 10 }}>Sair</button>
+          </div>
         </div>
 
         <div style={{ padding: '32px 32px 48px' }}>
@@ -208,12 +249,8 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 40 }}>
             <div>
               <div style={{ width: 32, height: 2, background: '#b21f17', marginBottom: 16 }} />
-              <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>
-                Potenciais Parceiros
-              </h1>
-              <p style={{ margin: '8px 0 0', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-                {total} perfis encontrados
-              </p>
+              <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: t.textStrong, letterSpacing: '-0.02em', lineHeight: 1 }}>Potenciais Parceiros</h1>
+              <p style={{ margin: '8px 0 0', color: t.textMuted, fontSize: 13 }}>{total} perfis encontrados</p>
             </div>
             <button onClick={runScrape} disabled={scraping} className="btn-primary">
               {scraping ? 'Buscando...' : '+ Buscar novos perfis'}
@@ -221,69 +258,28 @@ export default function Home() {
           </div>
 
           {/* Painel de ajuda */}
-          <div style={{ marginBottom: 24, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)' }}>
-            <button
-              onClick={() => setShowHelp(v => !v)}
-              style={{ width: '100%', background: 'transparent', border: 'none', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.4)', fontFamily: 'Montserrat, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12 }}>?</span> Como usar este sistema
-              </span>
+          <div style={{ marginBottom: 24, border: `1px solid ${t.border}`, background: t.bgCard }}>
+            <button onClick={() => setShowHelp(v => !v)}
+              style={{ width: '100%', background: 'transparent', border: 'none', padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: t.textMuted, fontFamily: 'Montserrat, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ fontSize: 12 }}>?</span> Como usar este sistema</span>
               <span style={{ fontSize: 14, transition: 'transform 0.2s', transform: showHelp ? 'rotate(180deg)' : 'none' }}>▾</span>
             </button>
             {showHelp && (
-              <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 16 }}>
+              <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${t.borderSub}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 16 }}>
                 {[
-                  {
-                    icon: '🔍',
-                    titulo: 'Buscar novos perfis',
-                    passos: [
-                      'Clique em "+ Buscar novos perfis"',
-                      'Aguarde ~5 minutos (a página atualiza sozinha)',
-                      'Novos corbans e promotoras aparecem automaticamente',
-                      'O sistema também busca todo dia às 7h sem precisar de ninguém',
-                    ],
-                  },
-                  {
-                    icon: '✏️',
-                    titulo: 'Atualizar um perfil',
-                    passos: [
-                      'Clique em "Editar" na linha do perfil',
-                      'Altere status, responsável, nicho, UF ou notas',
-                      'Clique em "Salvar"',
-                      'Use o campo Notas para registrar histórico de contato',
-                    ],
-                  },
-                  {
-                    icon: '🎯',
-                    titulo: 'Status dos perfis',
-                    passos: [
-                      'Sem status → ainda não analisado',
-                      'Lead do comercial → validado, pronto para abordar',
-                      'Abordado → já foi contatado',
-                      'Em contato → negociação em andamento',
-                      'Virou parceiro → fechou parceria',
-                      'Descartado → não tem fit',
-                    ],
-                  },
-                  {
-                    icon: '🔎',
-                    titulo: 'Filtrar e pesquisar',
-                    passos: [
-                      'Use a barra de busca para filtrar por @username ou nome',
-                      'Use o seletor de status para ver apenas um grupo',
-                      'Clique no @username para abrir o perfil no Instagram',
-                      'Os perfis são ordenados pelos mais recentes',
-                    ],
-                  },
+                  { icon: '🔍', titulo: 'Buscar novos perfis', passos: ['Clique em "+ Buscar novos perfis"', 'Aguarde ~5 minutos (a página atualiza sozinha)', 'Novos corbans e promotoras aparecem automaticamente', 'O sistema também busca todo dia às 7h sem precisar de ninguém'] },
+                  { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Altere status, responsável, nicho, UF ou notas', 'Clique em "Salvar"', 'Use o campo Notas para registrar histórico de contato'] },
+                  { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Lead do comercial → validado, pronto para abordar', 'Abordado → já foi contatado', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria', 'Descartado → não tem fit'] },
+                  { icon: '🔎', titulo: 'Filtrar e pesquisar', passos: ['Use a barra de busca para filtrar por @username ou nome', 'Use o seletor de status para ver apenas um grupo', 'Clique no @username para abrir o perfil no Instagram', 'Clique nos cabeçalhos da tabela para ordenar'] },
                 ].map(item => (
                   <div key={item.titulo}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <span style={{ fontSize: 16 }}>{item.icon}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>{item.titulo}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: t.textStrong, letterSpacing: '0.05em' }}>{item.titulo}</span>
                     </div>
                     <ol style={{ margin: 0, paddingLeft: 16 }}>
                       {item.passos.map((p, i) => (
-                        <li key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 5, lineHeight: 1.5 }}>{p}</li>
+                        <li key={i} style={{ fontSize: 12, color: t.textMuted, marginBottom: 5, lineHeight: 1.5 }}>{p}</li>
                       ))}
                     </ol>
                   </div>
@@ -294,108 +290,83 @@ export default function Home() {
 
           {/* Scrape message */}
           {scrapeMsg && (
-            <div style={{
-              borderLeft: '2px solid #b21f17', padding: '10px 16px', marginBottom: 24,
-              background: 'rgba(178,31,23,0.06)', fontSize: 12, color: 'rgba(255,255,255,0.6)',
-              fontWeight: 500, letterSpacing: '0.02em',
-            }}>
+            <div style={{ borderLeft: '2px solid #b21f17', padding: '10px 16px', marginBottom: 24, background: 'rgba(178,31,23,0.06)', fontSize: 12, color: t.textMuted, fontWeight: 500, letterSpacing: '0.02em' }}>
               {scrapeMsg}
             </div>
           )}
 
           {/* Filtros */}
           <div style={{ display: 'flex', gap: 32, marginBottom: 28, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 220, position: 'relative' }}>
-              <input value={q} onChange={e => { setQ(e.target.value); setPage(1) }}
-                placeholder="Buscar username ou nome..." className="search-input" />
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <input value={q} onChange={e => { setQ(e.target.value); setPage(1) }} placeholder="Buscar username ou nome..." className="search-input" />
             </div>
             <div style={{ position: 'relative' }}>
               <select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} className="filter-select">
                 <option value="">Todos os status</option>
                 {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
-              <span style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: 10, pointerEvents: 'none' }}>▾</span>
+              <span style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', color: t.textFaint, fontSize: 10, pointerEvents: 'none' }}>▾</span>
             </div>
           </div>
 
           {/* Tabela */}
-          <div style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ border: `1px solid ${t.border}` }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <tr style={{ borderBottom: `1px solid ${t.border}`, background: t.bgCard }}>
                   {[
-                    { label: 'Perfil',       key: 'username'   },
-                    { label: 'Seguidores',   key: 'followers'  },
-                    { label: 'Cidade',       key: 'cidade'     },
-                    { label: 'Telefone',     key: 'telefone'   },
-                    { label: 'Nicho',        key: 'nicho'      },
-                    { label: 'Status',       key: 'status'     },
-                    { label: 'Responsável',  key: 'responsavel'},
-                    { label: '',             key: ''           },
+                    { label: 'Perfil',      key: 'username'    },
+                    { label: 'Seguidores',  key: 'followers'   },
+                    { label: 'Cidade',      key: 'cidade'      },
+                    { label: 'Telefone',    key: 'telefone'    },
+                    { label: 'Nicho',       key: 'nicho'       },
+                    { label: 'Status',      key: 'status'      },
+                    { label: 'Responsável', key: 'responsavel' },
+                    { label: '',            key: ''            },
                   ].map(({ label, key }) => (
                     <th key={key || 'actions'} onClick={key ? () => toggleSort(key) : undefined}
-                      style={{
-                        padding: '12px 16px', textAlign: 'left',
-                        fontSize: 9, fontWeight: 700, color: sortKey === key ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)',
-                        letterSpacing: '0.15em', textTransform: 'uppercase',
-                        cursor: key ? 'pointer' : 'default',
-                        userSelect: 'none',
-                        whiteSpace: 'nowrap',
-                      }}>
+                      style={{ padding: '12px 16px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: sortKey === key ? t.text : t.textFaint, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: key ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }}>
                       {label}
-                      {key && (
-                        <span style={{ marginLeft: 4, opacity: sortKey === key ? 1 : 0.3 }}>
-                          {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
-                        </span>
-                      )}
+                      {key && <span style={{ marginLeft: 4, opacity: sortKey === key ? 1 : 0.4 }}>{sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}</span>}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12, letterSpacing: '0.1em' }}>CARREGANDO...</td></tr>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: t.textFaint, fontSize: 12, letterSpacing: '0.1em' }}>CARREGANDO...</td></tr>
                 ) : profiles.length === 0 ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>
-                    Nenhum perfil. Clique em &ldquo;+ Buscar novos perfis&rdquo; para começar.
-                  </td></tr>
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: t.textFaint, fontSize: 12 }}>Nenhum perfil. Clique em &ldquo;+ Buscar novos perfis&rdquo; para começar.</td></tr>
                 ) : sorted.map(p => (
-                  <tr key={p.id} className="table-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <tr key={p.id} className="table-row" style={{ borderBottom: `1px solid ${t.borderSub}` }}>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {p.avatarUrl
                           ? <img src={p.avatarUrl} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                          : <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 12, flexShrink: 0 }}>@</div>
+                          : <div style={{ width: 34, height: 34, borderRadius: '50%', background: t.inputBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.textFaint, fontSize: 12, flexShrink: 0 }}>@</div>
                         }
                         <div>
                           <a href={p.profileUrl ?? `https://instagram.com/${p.username}`} target="_blank" rel="noreferrer"
-                            style={{ color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: 13 }}>
+                            style={{ color: t.textStrong, fontWeight: 700, textDecoration: 'none', fontSize: 13 }}>
                             @{p.username}
                           </a>
-                          {p.fullName && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 2 }}>{p.fullName}</div>}
+                          {p.fullName && <div style={{ color: t.textMuted, fontSize: 11, marginTop: 2 }}>{p.fullName}</div>}
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 600 }}>{fmt(p.followers)}</td>
-                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.cidade ?? '—'}</td>
-                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.telefone ?? '—'}</td>
-                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{p.nicho ?? '—'}</td>
+                    <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 13, fontWeight: 600 }}>{fmt(p.followers)}</td>
+                    <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 12 }}>{p.cidade ?? '—'}</td>
+                    <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 12 }}>{p.telefone ?? '—'}</td>
+                    <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 12 }}>{p.nicho ?? '—'}</td>
                     <td style={{ padding: '14px 16px' }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: STATUS_COLORS[p.status] ?? '#52525b',
-                      }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: STATUS_COLORS[p.status] ?? '#52525b' }}>
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: STATUS_COLORS[p.status] ?? '#52525b', flexShrink: 0 }} />
                         {STATUS_LABELS[p.status] ?? p.status}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>{p.responsavel ?? '—'}</td>
+                    <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 12 }}>{p.responsavel ?? '—'}</td>
                     <td style={{ padding: '14px 16px' }}>
-                      <button onClick={() => setEditing({ ...p })}
-                        style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 1, padding: '5px 12px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'all 0.15s' }}>
-                        Editar
-                      </button>
+                      <button onClick={() => setEditing({ ...p })} className="edit-btn">Editar</button>
                     </td>
                   </tr>
                 ))}
@@ -407,7 +378,7 @@ export default function Home() {
           {pages > 1 && (
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 24 }}>
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="btn-ghost" style={{ padding: '8px 16px' }}>←</button>
-              <span style={{ padding: '8px 16px', color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 600 }}>{page} / {pages}</span>
+              <span style={{ padding: '8px 16px', color: t.textMuted, fontSize: 12, fontWeight: 600 }}>{page} / {pages}</span>
               <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} className="btn-ghost" style={{ padding: '8px 16px' }}>→</button>
             </div>
           )}
@@ -416,23 +387,22 @@ export default function Home() {
 
       {/* Modal de edição */}
       {editing && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}
+        <div style={{ position: 'fixed', inset: 0, background: t.modalOverlay, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}
           onClick={e => { if (e.target === e.currentTarget) setEditing(null) }}>
-          <div style={{ background: '#0a0a0b', border: '1px solid rgba(255,255,255,0.08)', width: 460, padding: 32 }}>
+          <div style={{ background: t.bgSub, border: `1px solid ${t.border}`, width: 460, padding: 32 }}>
             <div style={{ width: 24, height: 2, background: '#b21f17', marginBottom: 20 }} />
-            <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800, color: '#fff' }}>@{editing.username}</h2>
-            <p style={{ margin: '0 0 28px', fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Atualizar informações do perfil</p>
-
+            <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800, color: t.textStrong }}>@{editing.username}</h2>
+            <p style={{ margin: '0 0 28px', fontSize: 12, color: t.textMuted }}>Atualizar informações do perfil</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[
-                { label: 'Status', key: 'status', type: 'select' },
-                { label: 'Responsável', key: 'responsavel', type: 'text' },
-                { label: 'Nicho', key: 'nicho', type: 'text' },
-                { label: 'UF', key: 'uf', type: 'text' },
-                { label: 'Notas', key: 'notas', type: 'textarea' },
+                { label: 'Status',       key: 'status',      type: 'select'   },
+                { label: 'Responsável',  key: 'responsavel', type: 'text'     },
+                { label: 'Nicho',        key: 'nicho',       type: 'text'     },
+                { label: 'UF',           key: 'uf',          type: 'text'     },
+                { label: 'Notas',        key: 'notas',       type: 'textarea' },
               ].map(f => (
                 <div key={f.key}>
-                  <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</label>
+                  <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</label>
                   {f.type === 'select' ? (
                     <select value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
@@ -451,7 +421,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-
             <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
               <button onClick={() => setEditing(null)} className="btn-ghost" style={{ flex: 1 }}>Cancelar</button>
               <button onClick={saveEdit} className="btn-primary" style={{ flex: 1 }}>Salvar</button>
