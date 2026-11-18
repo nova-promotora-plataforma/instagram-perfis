@@ -188,6 +188,10 @@ export default function Home() {
 
   async function saveEdit() {
     if (!editing) return
+    if (editing.status === 'abordado' && !editing.comprovante && !uploadPreview) {
+      alert('Para o status "Abordado" é obrigatório anexar o comprovante da abordagem.')
+      return
+    }
     await fetch('/api/perfis', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editing) })
     setEditing(null)
     setUploadPreview(null)
