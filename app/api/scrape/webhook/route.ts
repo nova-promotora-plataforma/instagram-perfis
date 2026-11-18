@@ -45,10 +45,24 @@ export async function POST(req: NextRequest) {
       // só salva se for do Brasil (ou sem país definido)
       if (item.countryCode && item.countryCode !== 'BR') continue
 
-      // filtra apenas perfis relevantes ao nicho
-      const KEYWORDS = ['corban', 'promotora', 'correspondente', 'consignado', 'financeira', 'credito', 'cred', 'bancario', 'emprestimo', 'fgts', 'inss']
+      // filtra apenas perfis relevantes ao nicho (username + nome + bio)
+      const KEYWORDS = [
+        'corban', 'promotora', 'correspondente', 'consignado', 'financeira',
+        'credito', 'cred', 'bancario', 'emprestimo', 'fgts', 'inss',
+        'loas', 'trabalhador', 'consig', 'previd', 'beneficio', 'aposentad',
+      ]
       const haystack = `${username} ${item.fullName ?? ''} ${item.biography ?? ''}`.toLowerCase()
       if (!KEYWORDS.some(k => haystack.includes(k))) continue
+
+      // extrai telefone: campo oficial > wa.me na bio > web.whatsapp na bio
+      function extractPhone(bio: string | undefined): string | null {
+        if (!bio) return null
+        const m = bio.match(/(?:wa\.me|web\.whatsapp\.com\/send\?phone=)\/?(\+?[\d]{10,15})/)
+        return m ? m[1] : null
+      }
+      const telefone = item.publicPhoneNumber
+        ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}`
+        : extractPhone(item.biography)
 
       await prisma.igProfile.upsert({
         where: { username },
@@ -63,7 +77,7 @@ export async function POST(req: NextRequest) {
           profileUrl: `https://instagram.com/${username}`,
           avatarUrl:  item.profilePicUrl ?? null,
           cidade:     item.city ?? null,
-          telefone:   item.publicPhoneNumber ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}` : null,
+          telefone,
         },
         update: {
           fullName:   item.fullName ?? undefined,
@@ -74,7 +88,7 @@ export async function POST(req: NextRequest) {
           isVerified: item.verified ?? undefined,
           avatarUrl:  item.profilePicUrl ?? undefined,
           cidade:     item.city ?? undefined,
-          telefone:   item.publicPhoneNumber ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}` : undefined,
+          telefone:   telefone ?? undefined,
         },
       })
       inserted++
