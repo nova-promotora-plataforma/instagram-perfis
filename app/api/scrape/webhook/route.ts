@@ -45,6 +45,11 @@ export async function POST(req: NextRequest) {
       // só salva se for do Brasil (ou sem país definido)
       if (item.countryCode && item.countryCode !== 'BR') continue
 
+      // filtra apenas perfis relevantes ao nicho
+      const KEYWORDS = ['corban', 'promotora', 'correspondente', 'consignado', 'financeira', 'credito', 'cred', 'bancario', 'emprestimo', 'fgts', 'inss']
+      const haystack = `${username} ${item.fullName ?? ''} ${item.biography ?? ''}`.toLowerCase()
+      if (!KEYWORDS.some(k => haystack.includes(k))) continue
+
       await prisma.igProfile.upsert({
         where: { username },
         create: {
