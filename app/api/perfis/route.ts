@@ -32,7 +32,9 @@ export async function GET(req: NextRequest) {
     }),
   ])
 
-  return NextResponse.json({ data, total, page, pages: Math.ceil(total / PAGE_SIZE) })
+  return NextResponse.json({ data, total, page, pages: Math.ceil(total / PAGE_SIZE) }, {
+    headers: { 'Cache-Control': 'no-store' }
+  })
 }
 
 export async function PATCH(req: NextRequest) {

@@ -117,7 +117,7 @@ export default function Home() {
     const params = new URLSearchParams({ page: String(page) })
     if (q)      params.set('q', q)
     if (status) params.set('status', status)
-    const res = await fetch(`/api/perfis?${params}`)
+    const res = await fetch(`/api/perfis?${params}`, { cache: 'no-store' })
     const data = await res.json()
     setProfiles(data.data ?? [])
     setTotal(data.total ?? 0)
