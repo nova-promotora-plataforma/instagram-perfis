@@ -101,10 +101,9 @@ export async function POST(req: NextRequest) {
     } catch { /* skip duplicates */ }
   }
 
-  // dispara enriquecimento em background se salvou perfis novos
+  // dispara enriquecimento (await garante que o request é enviado antes do Vercel matar a função)
   if (inserted > 0) {
-    const baseUrl = 'https://instagram-perfis.vercel.app'
-    fetch(`${baseUrl}/api/enrich`, { method: 'POST' }).catch(() => {})
+    await fetch('https://instagram-perfis.vercel.app/api/enrich', { method: 'POST' }).catch(() => {})
   }
 
   return NextResponse.json({ ok: true, inserted })
