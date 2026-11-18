@@ -57,6 +57,7 @@ export default function Home() {
   const [modalOpen, setModalOpen]         = useState(false)
   const [uploading, setUploading]         = useState(false)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   // persiste preferência de tema
   useEffect(() => {
@@ -147,16 +148,30 @@ export default function Home() {
   async function handleUpload(file: File) {
     if (!editing) return
     setUploading(true)
+    setUploadProgress(0)
+    const timer = setInterval(() => setUploadProgress(p => Math.min(p + 2, 90)), 300)
     const form = new FormData()
     form.append('file', file)
     form.append('username', editing.username)
-    const res = await fetch('/api/upload', { method: 'POST', body: form })
-    const data = await res.json()
-    if (data.url) {
-      setEditing(prev => prev ? { ...prev, comprovante: data.url } : null)
-      setUploadPreview(data.url)
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: form })
+      const data = await res.json()
+      clearInterval(timer)
+      if (data.url) {
+        setUploadProgress(100)
+        setEditing(prev => prev ? { ...prev, comprovante: data.url } : null)
+        setUploadPreview(data.url)
+      } else {
+        setUploadProgress(0)
+        alert('Erro ao enviar: ' + (data.error ?? 'tente novamente'))
+      }
+    } catch {
+      clearInterval(timer)
+      setUploadProgress(0)
+      alert('Erro de conexão ao enviar o arquivo.')
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
   }
 
   async function saveEdit() {
@@ -532,7 +547,14 @@ export default function Home() {
                 </div>
               ) : (
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, border: `1px dashed ${editing.status === 'abordado' ? '#f59e0b' : t.inputBorder}`, borderRadius: 2, padding: '20px 16px', cursor: 'pointer', color: t.textMuted, fontSize: 12, transition: 'border-color 0.2s' }}>
-                  {uploading ? '⏳ Enviando...' : '📎 Clique para enviar o print da abordagem'}
+                  {uploading ? (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 11 }}>⏳ Enviando... {uploadProgress}%</span>
+                      <div style={{ width: '100%', height: 4, background: '#333', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#f59e0b', borderRadius: 2, transition: 'width 0.3s ease' }} />
+                      </div>
+                    </div>
+                  ) : '📎 Clique para enviar o print da abordagem'}
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]) }} disabled={uploading} />
                 </label>
               )}
