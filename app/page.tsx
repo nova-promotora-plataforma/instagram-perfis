@@ -7,6 +7,7 @@ const STATUS_LABELS: Record<string, string> = {
   abordado:        'Abordado',
   em_contato:      'Em contato',
   virou_parceiro:  'Virou parceiro',
+  ja_parceiro:     'Já é parceiro',
   descartado:      'Descartado',
 }
 const STATUS_COLORS: Record<string, string> = {
@@ -15,6 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
   abordado:        '#f59e0b',
   em_contato:      '#8b5cf6',
   virou_parceiro:  '#10b981',
+  ja_parceiro:     '#06b6d4',
   descartado:      '#ef4444',
 }
 
