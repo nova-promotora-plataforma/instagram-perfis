@@ -175,6 +175,7 @@ export default function Home() {
         }
         .modal-input:focus { border-color: #b21f17; }
         .modal-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+        .modal-select option { background: #0f0f10; color: #fff; }
       `}</style>
 
       <div style={{ fontFamily: 'Montserrat, sans-serif', background: '#020203', minHeight: '100vh', color: '#e5e7eb' }}>
