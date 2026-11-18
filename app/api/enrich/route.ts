@@ -26,7 +26,7 @@ async function runEnrich() {
 
   const directUrls = profiles.map(p => `https://www.instagram.com/${p.username}/`)
 
-  const webhookUrl = 'https://instagram-perfis.vercel.app/api/scrape/webhook'
+  const webhookUrl = 'https://instagram-perfis.vercel.app/api/enrich/webhook'
   const webhooksB64 = Buffer.from(JSON.stringify([{
     eventTypes: ['ACTOR.RUN.SUCCEEDED'],
     requestUrl: webhookUrl,
