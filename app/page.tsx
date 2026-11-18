@@ -261,6 +261,7 @@ export default function Home() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={toggleTheme} title={`Mudar para tema ${t.themeLabel}`}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t.themeLabel}</span>
               <span style={{ fontSize: 16, lineHeight: 1 }}>{dark ? '☀️' : '🌙'}</span>
               <span style={{
                 display: 'inline-flex', alignItems: 'center',
