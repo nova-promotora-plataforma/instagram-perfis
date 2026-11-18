@@ -208,7 +208,7 @@ export default function Home() {
   })
 
   const fmt = (n: number | null) =>
-    n == null ? '—' : n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n/1_000).toFixed(0)}k` : String(n)
+    n == null ? '—' : n.toLocaleString('pt-BR')
 
   return (
     <>
