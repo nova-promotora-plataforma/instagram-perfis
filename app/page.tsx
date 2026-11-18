@@ -115,8 +115,9 @@ export default function Home() {
   const load = useCallback(async () => {
     setLoading(true)
     const params = new URLSearchParams({ page: String(page) })
-    if (q)      params.set('q', q)
-    if (status) params.set('status', status)
+    if (q)       params.set('q', q)
+    if (status)  params.set('status', status)
+    if (sortKey) { params.set('sortKey', sortKey); params.set('sortDir', sortDir) }
     const res = await fetch(`/api/perfis?${params}`, { cache: 'no-store' })
     const data = await res.json()
     setProfiles(data.data ?? [])
@@ -124,7 +125,7 @@ export default function Home() {
     setPages(data.pages ?? 1)
     setLoading(false)
     return data.total ?? 0
-  }, [page, q, status])
+  }, [page, q, status, sortKey, sortDir])
 
   useEffect(() => { load() }, [load])
 

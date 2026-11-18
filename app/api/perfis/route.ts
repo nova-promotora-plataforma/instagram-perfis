@@ -5,11 +5,18 @@ const PAGE_SIZE = 30
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const page   = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
-  const q      = (searchParams.get('q') ?? '').trim().toLowerCase()
-  const status = searchParams.get('status') ?? ''
-  const uf     = searchParams.get('uf') ?? ''
-  const nicho  = searchParams.get('nicho') ?? ''
+  const page    = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+  const q       = (searchParams.get('q') ?? '').trim().toLowerCase()
+  const status  = searchParams.get('status') ?? ''
+  const uf      = searchParams.get('uf') ?? ''
+  const nicho   = searchParams.get('nicho') ?? ''
+  const sortKey = searchParams.get('sortKey') ?? ''
+  const sortDir = searchParams.get('sortDir') === 'desc' ? 'desc' : 'asc'
+
+  const SORT_FIELDS: Record<string, string> = {
+    username: 'username', followers: 'followers', cidade: 'cidade',
+    telefone: 'telefone', nicho: 'nicho', status: 'status', responsavel: 'responsavel'
+  }
 
   const where: Record<string, unknown> = {}
   if (status) where.status = status
@@ -26,7 +33,9 @@ export async function GET(req: NextRequest) {
     prisma.igProfile.count({ where }),
     prisma.igProfile.findMany({
       where,
-      orderBy: { followers: 'desc' },
+      orderBy: sortKey && SORT_FIELDS[sortKey]
+        ? { [SORT_FIELDS[sortKey]]: sortDir }
+        : { followers: 'desc' },
       skip:  (page - 1) * PAGE_SIZE,
       take:  PAGE_SIZE,
     }),
