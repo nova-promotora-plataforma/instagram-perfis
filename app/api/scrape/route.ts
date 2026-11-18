@@ -15,13 +15,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const searches: string[] = body.searches ?? DEFAULT_SEARCHES
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'https://instagram-perfis.vercel.app'
-
-  const webhookUrl = `${baseUrl}/api/scrape/webhook`
+  const webhookUrl = 'https://instagram-perfis.vercel.app/api/scrape/webhook'
 
   let started = 0
+  const runIds: string[] = []
   for (const search of searches) {
     const res = await fetch(
       `https://api.apify.com/v2/acts/${encodeURIComponent(APIFY_ACTOR_ID)}/runs?token=${APIFY_TOKEN}`,
@@ -31,22 +28,27 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           resultsType: 'details',
           search,
-          searchType: 'hashtag',
+          searchType: 'user',
           searchLimit: 10,
           proxy: { useApifyProxy: true },
           webhooks: [{
-            eventTypes: ['ACTOR.RUN.SUCCEEDED'],
+            eventTypes: ['ACTOR.RUN.SUCCEEDED', 'ACTOR.RUN.FAILED'],
             requestUrl: webhookUrl,
           }],
         }),
       }
     )
-    if (res.ok) started++
+    if (res.ok) {
+      started++
+      const data = await res.json().catch(() => ({}))
+      if (data?.data?.id) runIds.push(data.data.id)
+    }
   }
 
   return NextResponse.json({
     ok: true,
     started,
-    message: `${started} buscas iniciadas. Os perfis aparecem em ~3 min — atualize a página.`,
+    runIds,
+    message: `${started} buscas iniciadas. Os perfis aparecem em ~5 min — atualize a página.`,
   })
 }
