@@ -309,7 +309,7 @@ export default function Home() {
               <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${t.borderSub}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 16 }}>
                 {[
                   { icon: '🔍', titulo: 'Buscar novos perfis', passos: ['Clique em "+ Buscar novos perfis"', 'Aguarde ~5 minutos (a página atualiza sozinha)', 'Novos corbans e promotoras aparecem automaticamente', 'O sistema também busca todo dia às 7h sem precisar de ninguém'] },
-                  { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Altere status, responsável, nicho, UF ou notas', 'Clique em "Salvar"', 'Use o campo Notas para registrar histórico de contato'] },
+                  { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Altere status, responsável, produto principal, UF ou notas', 'Clique em "Salvar"', 'Use o campo Notas para registrar histórico de contato'] },
                   { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Lead do comercial → validado, pronto para abordar', 'Abordado → já foi contatado', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria', 'Descartado → não tem fit'] },
                   { icon: '🔎', titulo: 'Filtrar e pesquisar', passos: ['Use a barra de busca para filtrar por @username ou nome', 'Use o seletor de status para ver apenas um grupo', 'Clique no @username para abrir o perfil no Instagram', 'Clique nos cabeçalhos da tabela para ordenar'] },
                 ].map(item => (
@@ -375,7 +375,7 @@ export default function Home() {
                     { label: 'Seguidores',  key: 'followers'   },
                     { label: 'Cidade',      key: 'cidade'      },
                     { label: 'Telefone',    key: 'telefone'    },
-                    { label: 'Nicho',       key: 'nicho'       },
+                    { label: 'Produto',     key: 'nicho'       },
                     { label: 'Status',      key: 'status'      },
                     { label: 'Responsável', key: 'responsavel' },
                     { label: '',            key: ''            },
@@ -455,11 +455,12 @@ export default function Home() {
             <p style={{ margin: '0 0 28px', fontSize: 12, color: t.textMuted }}>Atualizar informações do perfil</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {[
-                { label: 'Status',       key: 'status',      type: 'select'   },
-                { label: 'Responsável',  key: 'responsavel', type: 'text'     },
-                { label: 'Nicho',        key: 'nicho',       type: 'text'     },
-                { label: 'UF',           key: 'uf',          type: 'text'     },
-                { label: 'Notas',        key: 'notas',       type: 'textarea' },
+                { label: 'Status',            key: 'status',      type: 'select'   },
+                { label: 'Responsável',       key: 'responsavel', type: 'text'     },
+                { label: 'Produto principal', key: 'nicho',       type: 'text', placeholder: 'Ex: CLT, FGTS, INSS' },
+                { label: 'Cidade',            key: 'cidade',      type: 'text'     },
+                { label: 'UF',               key: 'uf',          type: 'text'     },
+                { label: 'Notas',             key: 'notas',       type: 'textarea' },
               ].map(f => (
                 <div key={f.key}>
                   <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{f.label}</label>
@@ -489,6 +490,7 @@ export default function Home() {
                   ) : (
                     <input value={(editing as unknown as Record<string, string>)[f.key] ?? ''}
                       onChange={e => setEditing(prev => prev ? { ...prev, [f.key]: e.target.value } : null)}
+                      placeholder={(f as { placeholder?: string }).placeholder ?? ''}
                       className="modal-input" />
                   )}
                 </div>
