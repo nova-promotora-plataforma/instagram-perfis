@@ -43,6 +43,7 @@ export default function Home() {
   const [scraping, setScraping] = useState(false)
   const [scrapeMsg, setScrapeMsg] = useState('')
   const [editing, setEditing]   = useState<Profile | null>(null)
+  const [polling, setPolling]   = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -55,21 +56,36 @@ export default function Home() {
     setTotal(data.total ?? 0)
     setPages(data.pages ?? 1)
     setLoading(false)
+    return data.total ?? 0
   }, [page, q, status])
 
   useEffect(() => { load() }, [load])
 
   async function runScrape() {
     setScraping(true)
-    setScrapeMsg('Executando scraper...')
+    setScrapeMsg('Iniciando buscas...')
     const res = await fetch('/api/scrape', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
     const data = await res.json()
     if (data.error) {
       setScrapeMsg(`Erro: ${data.error}`)
-    } else {
-      setScrapeMsg(data.message ?? `${data.started ?? 0} buscas iniciadas. Os perfis aparecem em ~3 min — atualize a página.`)
+      setScraping(false)
+      return
     }
+    setScrapeMsg('Buscando perfis... atualizando automaticamente.')
     setScraping(false)
+    setPolling(true)
+    // poll a cada 15s até parar de crescer
+    let prev = total
+    let stable = 0
+    const interval = setInterval(async () => {
+      const current = await load()
+      if (current === prev) { stable++ } else { stable = 0; prev = current }
+      if (stable >= 3) {
+        clearInterval(interval)
+        setPolling(false)
+        setScrapeMsg(`Busca concluída — ${current} perfis no total.`)
+      }
+    }, 15000)
   }
 
   async function saveEdit() {

@@ -9,6 +9,11 @@ const DEFAULT_SEARCHES = [
   'promotora credito brasil',
   'correspondente bancario brasil',
   'corban consignado brasil',
+  'promotora financeira brasil',
+  'consignado inss brasil',
+  'correspondente bancario SP',
+  'correspondente bancario RJ',
+  'correspondente bancario MG',
 ]
 
 export async function POST(req: NextRequest) {
@@ -34,7 +39,7 @@ export async function POST(req: NextRequest) {
           resultsType: 'details',
           search,
           searchType: 'user',
-          searchLimit: 10,
+          searchLimit: 50,
           proxy: { useApifyProxy: true },
         }),
       }
