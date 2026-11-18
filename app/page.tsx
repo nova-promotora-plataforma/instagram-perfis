@@ -34,6 +34,7 @@ interface Profile {
   telefone: string | null
   profileUrl: string | null
   avatarUrl: string | null
+  comprovante: string | null
 }
 
 export default function Home() {
@@ -52,8 +53,10 @@ export default function Home() {
   const [sortKey, setSortKey]     = useState<string>('')
   const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('asc')
   const [dark, setDark]           = useState(true)
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [modalOpen, setModalOpen]   = useState(false)
+  const [filterOpen, setFilterOpen]       = useState(false)
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [uploading, setUploading]         = useState(false)
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null)
 
   // persiste preferência de tema
   useEffect(() => {
@@ -141,10 +144,26 @@ export default function Home() {
     }, 15000)
   }
 
+  async function handleUpload(file: File) {
+    if (!editing) return
+    setUploading(true)
+    const form = new FormData()
+    form.append('file', file)
+    form.append('username', editing.username)
+    const res = await fetch('/api/upload', { method: 'POST', body: form })
+    const data = await res.json()
+    if (data.url) {
+      setEditing(prev => prev ? { ...prev, comprovante: data.url } : null)
+      setUploadPreview(data.url)
+    }
+    setUploading(false)
+  }
+
   async function saveEdit() {
     if (!editing) return
     await fetch('/api/perfis', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editing) })
     setEditing(null)
+    setUploadPreview(null)
     load()
   }
 
@@ -405,8 +424,12 @@ export default function Home() {
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px', color: t.textMuted, fontSize: 12 }}>{p.responsavel ?? '—'}</td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <button onClick={() => setEditing({ ...p })} className="edit-btn">Editar</button>
+                    <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                      {p.comprovante && (
+                        <a href={p.comprovante} target="_blank" rel="noreferrer" title="Ver comprovante"
+                          style={{ display: 'inline-flex', alignItems: 'center', marginRight: 8, color: '#f59e0b', fontSize: 14, textDecoration: 'none' }}>📎</a>
+                      )}
+                      <button onClick={() => { setEditing({ ...p }); setUploadPreview(p.comprovante ?? null) }} className="edit-btn">Editar</button>
                     </td>
                   </tr>
                 ))}
@@ -474,8 +497,35 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            {/* Comprovante — aparece sempre, destaque quando abordado */}
+            <div>
+              <label style={{ display: 'block', fontSize: 9, fontWeight: 700, color: editing.status === 'abordado' ? '#f59e0b' : t.textMuted, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
+                Comprovante de abordagem {editing.status === 'abordado' && '⚠'}
+              </label>
+              {(uploadPreview ?? editing.comprovante) ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <a href={uploadPreview ?? editing.comprovante ?? ''} target="_blank" rel="noreferrer">
+                    <img src={uploadPreview ?? editing.comprovante ?? ''} alt="comprovante"
+                      style={{ height: 64, width: 'auto', borderRadius: 2, border: `1px solid ${t.border}`, objectFit: 'cover', cursor: 'pointer' }} />
+                  </a>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#10b981', fontWeight: 600, marginBottom: 4 }}>✓ Print enviado</div>
+                    <label style={{ fontSize: 10, color: t.textMuted, cursor: 'pointer', textDecoration: 'underline' }}>
+                      Trocar
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]) }} />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, border: `1px dashed ${editing.status === 'abordado' ? '#f59e0b' : t.inputBorder}`, borderRadius: 2, padding: '20px 16px', cursor: 'pointer', color: t.textMuted, fontSize: 12, transition: 'border-color 0.2s' }}>
+                  {uploading ? '⏳ Enviando...' : '📎 Clique para enviar o print da abordagem'}
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]) }} disabled={uploading} />
+                </label>
+              )}
+            </div>
+
             <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
-              <button onClick={() => setEditing(null)} className="btn-ghost" style={{ flex: 1 }}>Cancelar</button>
+              <button onClick={() => { setEditing(null); setUploadPreview(null) }} className="btn-ghost" style={{ flex: 1 }}>Cancelar</button>
               <button onClick={saveEdit} className="btn-primary" style={{ flex: 1 }}>Salvar</button>
             </div>
           </div>

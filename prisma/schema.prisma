@@ -26,6 +26,7 @@ model IgProfile {
   status      String    @default("sem_status") // sem_status | lead_comercial | abordado | em_contato | virou_parceiro | descartado
   responsavel String?
   notas       String?
+  comprovante String?
   scrapedAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
