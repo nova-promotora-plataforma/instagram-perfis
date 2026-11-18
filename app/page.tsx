@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback } from 'react'
 
 const STATUS_LABELS: Record<string, string> = {
   sem_status:      'Sem status',
-  lead_comercial:  'Lead do comercial',
   abordado:        'Abordado',
   em_contato:      'Em contato',
   virou_parceiro:  'Virou parceiro',
