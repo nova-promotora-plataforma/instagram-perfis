@@ -555,10 +555,16 @@ export default function Home() {
                   </a>
                   <div>
                     <div style={{ fontSize: 11, color: '#10b981', fontWeight: 600, marginBottom: 4 }}>✓ Print enviado</div>
-                    <label style={{ fontSize: 10, color: t.textMuted, cursor: 'pointer', textDecoration: 'underline' }}>
-                      Trocar
-                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]) }} />
-                    </label>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <label style={{ fontSize: 10, color: t.textMuted, cursor: 'pointer', textDecoration: 'underline' }}>
+                        Trocar
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]) }} />
+                      </label>
+                      <button onClick={() => { setUploadPreview(null); setEditing(prev => prev ? { ...prev, comprovante: null } : null) }}
+                        style={{ fontSize: 10, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -578,7 +584,6 @@ export default function Home() {
 
             <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
               <button onClick={() => { setEditing(null); setUploadPreview(null) }} className="btn-ghost" style={{ flex: 1 }}>Cancelar</button>
-              <button onClick={deleteProfile} style={{ flex: 1, background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', fontFamily: 'Montserrat, sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '12px', cursor: 'pointer', borderRadius: 2 }}>Excluir</button>
               <button onClick={saveEdit} className="btn-primary" style={{ flex: 1 }}>Salvar</button>
             </div>
           </div>
