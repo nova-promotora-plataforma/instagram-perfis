@@ -13,15 +13,17 @@ interface ApifyUser {
   verified?:               boolean
   profilePicUrl?:          string
   inputUrl?:               string
+  externalUrl?:            string
   city?:                   string
+  addressCity?:            string
   countryCode?:            string
   publicPhoneNumber?:      string
   publicPhoneCountryCode?: string
 }
 
-function extractPhone(bio: string | undefined): string | null {
-  if (!bio) return null
-  const m = bio.match(/(?:wa\.me|web\.whatsapp\.com\/send\?phone=)\/?(\+?[\d]{10,15})/)
+function extractWaMe(text: string | undefined): string | null {
+  if (!text) return null
+  const m = text.match(/(?:wa\.me|web\.whatsapp\.com\/send\?phone=)\/?(\+?[\d]{10,15})/)
   return m ? m[1] : null
 }
 
@@ -51,21 +53,23 @@ export async function POST(req: NextRequest) {
 
     const telefone = item.publicPhoneNumber
       ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}`
-      : extractPhone(item.biography)
+      : (extractWaMe(item.externalUrl) ?? extractWaMe(item.biography))
+
+    const cidade = item.city ?? item.addressCity ?? undefined
 
     try {
       await prisma.igProfile.update({
         where: { username },
         data: {
-          fullName:   item.fullName   ?? undefined,
-          bio:        item.biography  ?? undefined,
-          followers:  item.followersCount  != null ? item.followersCount  : undefined,
-          following:  item.followingCount  != null ? item.followingCount  : undefined,
-          postsCount: item.postsCount      != null ? item.postsCount      : undefined,
-          isVerified: item.verified        != null ? item.verified        : undefined,
-          avatarUrl:  item.profilePicUrl   ?? undefined,
-          cidade:     item.city            ?? undefined,
-          telefone:   telefone             ?? undefined,
+          fullName:   item.fullName          ?? undefined,
+          bio:        item.biography         ?? undefined,
+          followers:  item.followersCount    != null ? item.followersCount  : undefined,
+          following:  item.followingCount    != null ? item.followingCount  : undefined,
+          postsCount: item.postsCount        != null ? item.postsCount      : undefined,
+          isVerified: item.verified          != null ? item.verified        : undefined,
+          avatarUrl:  item.profilePicUrl     ?? undefined,
+          cidade:     cidade                 ?? undefined,
+          telefone:   telefone               ?? undefined,
         },
       })
       updated++

@@ -4,21 +4,24 @@ import { prisma } from '@/lib/db'
 export const maxDuration = 60
 
 interface ApifyUser {
-  username?:            string
-  fullName?:            string
-  biography?:           string
-  followersCount?:      number
-  followingCount?:      number
-  postsCount?:          number
-  verified?:            boolean
-  profilePicUrl?:       string
-  inputUrl?:            string
-  city?:                string
-  country?:             string
-  countryCode?:         string
-  businessCategoryName?: string
-  isBusinessAccount?:   boolean
-  publicPhoneNumber?:   string
+  username?:               string
+  fullName?:               string
+  biography?:              string
+  followersCount?:         number
+  followingCount?:         number
+  postsCount?:             number
+  verified?:               boolean
+  profilePicUrl?:          string
+  inputUrl?:               string
+  externalUrl?:            string
+  city?:                   string
+  addressCity?:            string
+  addressStreetAndNumber?: string
+  country?:                string
+  countryCode?:            string
+  businessCategoryName?:   string
+  isBusinessAccount?:      boolean
+  publicPhoneNumber?:      string
   publicPhoneCountryCode?: string
 }
 
@@ -54,15 +57,18 @@ export async function POST(req: NextRequest) {
       const haystack = `${username} ${item.fullName ?? ''} ${item.biography ?? ''}`.toLowerCase()
       if (!KEYWORDS.some(k => haystack.includes(k))) continue
 
-      // extrai telefone: campo oficial > wa.me na bio > web.whatsapp na bio
-      function extractPhone(bio: string | undefined): string | null {
-        if (!bio) return null
-        const m = bio.match(/(?:wa\.me|web\.whatsapp\.com\/send\?phone=)\/?(\+?[\d]{10,15})/)
+      // extrai telefone: campo oficial > wa.me no externalUrl > wa.me na bio
+      function extractWaMe(text: string | undefined): string | null {
+        if (!text) return null
+        const m = text.match(/(?:wa\.me|web\.whatsapp\.com\/send\?phone=)\/?(\+?[\d]{10,15})/)
         return m ? m[1] : null
       }
       const telefone = item.publicPhoneNumber
         ? `+${item.publicPhoneCountryCode ?? '55'}${item.publicPhoneNumber}`
-        : extractPhone(item.biography)
+        : (extractWaMe(item.externalUrl) ?? extractWaMe(item.biography))
+
+      // cidade: campo estruturado > addressCity do Apify
+      const cidade = item.city ?? item.addressCity ?? null
 
       await prisma.igProfile.upsert({
         where: { username },
@@ -76,7 +82,7 @@ export async function POST(req: NextRequest) {
           isVerified: item.verified ?? false,
           profileUrl: `https://instagram.com/${username}`,
           avatarUrl:  item.profilePicUrl ?? null,
-          cidade:     item.city ?? null,
+          cidade,
           telefone,
         },
         update: {
@@ -87,7 +93,7 @@ export async function POST(req: NextRequest) {
           postsCount: item.postsCount ?? undefined,
           isVerified: item.verified ?? undefined,
           avatarUrl:  item.profilePicUrl ?? undefined,
-          cidade:     item.city ?? undefined,
+          cidade:     cidade ?? undefined,
           telefone:   telefone ?? undefined,
         },
       })
