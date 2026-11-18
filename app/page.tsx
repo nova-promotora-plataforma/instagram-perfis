@@ -562,7 +562,7 @@ export default function Home() {
                       </label>
                       <button onClick={() => { setUploadPreview(null); setEditing(prev => prev ? { ...prev, comprovante: null } : null) }}
                         style={{ fontSize: 10, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                        Remover
+                        Excluir print
                       </button>
                     </div>
                   </div>
