@@ -7,6 +7,7 @@ const STATUS_LABELS: Record<string, string> = {
   em_contato:      'Em contato',
   virou_parceiro:  'Virou parceiro',
   ja_parceiro:     'Já é parceiro',
+  concorrente:     'Promotora concorrente',
   descartado:      'Descartado',
 }
 const STATUS_COLORS: Record<string, string> = {
@@ -16,6 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
   em_contato:      '#8b5cf6',
   virou_parceiro:  '#10b981',
   ja_parceiro:     '#06b6d4',
+  concorrente:     '#f97316',
   descartado:      '#ef4444',
 }
 
@@ -326,7 +328,7 @@ export default function Home() {
                 {[
                   { icon: '🔍', titulo: 'Buscar novos perfis', passos: ['Clique em "+ Buscar novos perfis"', 'Aguarde ~5 minutos (a página atualiza sozinha)', 'Novos corbans e promotoras aparecem automaticamente', 'O sistema também busca todo dia às 7h sem precisar de ninguém'] },
                   { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Preencha status, responsável, produto principal, cidade, UF ou notas', 'No status "Abordado" anexe o print da abordagem como comprovante', 'Ao virar parceiro, registre o código do parceiro para identificação interna', 'Clique em "Salvar"'] },
-                  { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Abordado → já foi contatado (anexe comprovante)', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria (registre o código)', 'Já é parceiro → já era parceiro antes do sistema', 'Descartado → não tem fit'] },
+                  { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Abordado → já foi contatado (anexe comprovante)', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria (registre o código)', 'Já é parceiro → já era parceiro antes do sistema', 'Promotora concorrente → B2B concorrente, não abordar', 'Descartado → não tem fit'] },
                   { icon: '🔎', titulo: 'Filtrar e pesquisar', passos: ['Use a barra de busca para filtrar por @username ou nome', 'Use o seletor de status para ver apenas um grupo', 'Clique no @username para abrir o perfil no Instagram', 'Clique nos cabeçalhos da tabela para ordenar'] },
                 ].map(item => (
                   <div key={item.titulo}>
