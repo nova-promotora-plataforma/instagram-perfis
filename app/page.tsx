@@ -260,25 +260,21 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={toggleTheme} title={`Mudar para tema ${t.themeLabel}`}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: t.textMuted, fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.08em' }}>
-                {dark ? '☀️' : '🌙'}
-              </span>
-              {/* track */}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>{dark ? '☀️' : '🌙'}</span>
               <span style={{
                 display: 'inline-flex', alignItems: 'center',
-                width: 40, height: 22, borderRadius: 11,
-                background: dark ? 'rgba(255,255,255,0.12)' : '#b21f17',
-                border: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : '#991a14'}`,
-                padding: '2px',
+                width: 44, height: 24, borderRadius: 12,
+                background: dark ? 'rgba(255,255,255,0.15)' : '#b21f17',
+                border: `1.5px solid ${dark ? 'rgba(255,255,255,0.25)' : '#991a14'}`,
+                padding: '2px 3px',
                 transition: 'background 0.25s, border-color 0.25s',
-                position: 'relative',
               }}>
                 <span style={{
-                  display: 'block', width: 16, height: 16, borderRadius: '50%',
+                  display: 'block', width: 18, height: 18, borderRadius: '50%',
                   background: '#fff',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                  transform: dark ? 'translateX(0)' : 'translateX(18px)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+                  transform: dark ? 'translateX(0)' : 'translateX(20px)',
                   transition: 'transform 0.25s',
                 }} />
               </span>
