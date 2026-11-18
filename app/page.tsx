@@ -47,6 +47,8 @@ export default function Home() {
   const [editing, setEditing]   = useState<Profile | null>(null)
   const [polling, setPolling]   = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  const [sortKey, setSortKey]   = useState<string>('')
+  const [sortDir, setSortDir]   = useState<'asc' | 'desc'>('asc')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -106,6 +108,24 @@ export default function Home() {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
   }
+
+  function toggleSort(key: string) {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
+
+  const sorted = [...profiles].sort((a, b) => {
+    if (!sortKey) return 0
+    const av = (a as unknown as Record<string, unknown>)[sortKey]
+    const bv = (b as unknown as Record<string, unknown>)[sortKey]
+    if (av == null && bv == null) return 0
+    if (av == null) return 1
+    if (bv == null) return -1
+    const cmp = typeof av === 'number' && typeof bv === 'number'
+      ? av - bv
+      : String(av).localeCompare(String(bv), 'pt-BR', { sensitivity: 'base' })
+    return sortDir === 'asc' ? cmp : -cmp
+  })
 
   const fmt = (n: number | null) =>
     n == null ? '—' : n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(0)}k` : String(n)
@@ -302,12 +322,32 @@ export default function Home() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  {['Perfil', 'Seguidores', 'Cidade', 'Telefone', 'Nicho', 'Status', 'Responsável', ''].map((h, i) => (
-                    <th key={i} style={{
-                      padding: '12px 16px', textAlign: 'left',
-                      fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
-                      letterSpacing: '0.15em', textTransform: 'uppercase',
-                    }}>{h}</th>
+                  {[
+                    { label: 'Perfil',       key: 'username'   },
+                    { label: 'Seguidores',   key: 'followers'  },
+                    { label: 'Cidade',       key: 'cidade'     },
+                    { label: 'Telefone',     key: 'telefone'   },
+                    { label: 'Nicho',        key: 'nicho'      },
+                    { label: 'Status',       key: 'status'     },
+                    { label: 'Responsável',  key: 'responsavel'},
+                    { label: '',             key: ''           },
+                  ].map(({ label, key }) => (
+                    <th key={key || 'actions'} onClick={key ? () => toggleSort(key) : undefined}
+                      style={{
+                        padding: '12px 16px', textAlign: 'left',
+                        fontSize: 9, fontWeight: 700, color: sortKey === key ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)',
+                        letterSpacing: '0.15em', textTransform: 'uppercase',
+                        cursor: key ? 'pointer' : 'default',
+                        userSelect: 'none',
+                        whiteSpace: 'nowrap',
+                      }}>
+                      {label}
+                      {key && (
+                        <span style={{ marginLeft: 4, opacity: sortKey === key ? 1 : 0.3 }}>
+                          {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                        </span>
+                      )}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -318,7 +358,7 @@ export default function Home() {
                   <tr><td colSpan={8} style={{ textAlign: 'center', padding: 48, color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>
                     Nenhum perfil. Clique em &ldquo;+ Buscar novos perfis&rdquo; para começar.
                   </td></tr>
-                ) : profiles.map(p => (
+                ) : sorted.map(p => (
                   <tr key={p.id} className="table-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
