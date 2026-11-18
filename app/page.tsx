@@ -324,8 +324,8 @@ export default function Home() {
               <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${t.borderSub}`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginTop: 16 }}>
                 {[
                   { icon: '🔍', titulo: 'Buscar novos perfis', passos: ['Clique em "+ Buscar novos perfis"', 'Aguarde ~5 minutos (a página atualiza sozinha)', 'Novos corbans e promotoras aparecem automaticamente', 'O sistema também busca todo dia às 7h sem precisar de ninguém'] },
-                  { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Altere status, responsável, produto principal, UF ou notas', 'Clique em "Salvar"', 'Use o campo Notas para registrar histórico de contato'] },
-                  { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Lead do comercial → validado, pronto para abordar', 'Abordado → já foi contatado', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria', 'Descartado → não tem fit'] },
+                  { icon: '✏️', titulo: 'Atualizar um perfil', passos: ['Clique em "Editar" na linha do perfil', 'Preencha status, responsável, produto principal, cidade, UF ou notas', 'No status "Abordado" anexe o print da abordagem como comprovante', 'Ao virar parceiro, registre o código do parceiro para identificação interna', 'Clique em "Salvar"'] },
+                  { icon: '🎯', titulo: 'Status dos perfis', passos: ['Sem status → ainda não analisado', 'Abordado → já foi contatado (anexe comprovante)', 'Em contato → negociação em andamento', 'Virou parceiro → fechou parceria (registre o código)', 'Já é parceiro → já era parceiro antes do sistema', 'Descartado → não tem fit'] },
                   { icon: '🔎', titulo: 'Filtrar e pesquisar', passos: ['Use a barra de busca para filtrar por @username ou nome', 'Use o seletor de status para ver apenas um grupo', 'Clique no @username para abrir o perfil no Instagram', 'Clique nos cabeçalhos da tabela para ordenar'] },
                 ].map(item => (
                   <div key={item.titulo}>
